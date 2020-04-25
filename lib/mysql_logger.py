@@ -9,7 +9,7 @@ from tkinter import messagebox
 import mysql.connector
 
 # import tkinter as tk
-# from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 # import time
 
 
@@ -66,7 +66,7 @@ class Mysql:
         self.local_ip = s.getsockname()[0]
         s.close()
         
-        con, e = self.get_db_connection(True)
+        con, e = self.get_db_connexion()
         if not con:
             print("_init_ -> DB UNEXPECTED ERROR\n" + str(e[0]), "/", str(e[1]), "/", str(e[2]) + "\nLe programme va s'arrêter")
             msg = "".join(["ERROR " + str(e[0]), "/ ", str(e[1]), "/ ", str(e[2]) + "Le programme va s'arrêter"])
@@ -74,7 +74,7 @@ class Mysql:
             print("DB UNEXPECTED ERROR", msg)
             exit()
             
-    def get_db_connection(self, verbose):
+    def get_db_connexion(self):
         
         # verify if the mysql server is ok and the db avaliable
         try:
@@ -82,21 +82,83 @@ class Mysql:
                 # test the local database connection
 #                 con = mdb.connect(self.host_name, self.database_username, self.database_password, self.database_name)
                 con = mysql.connector.connect(user=self.database_username, password=self.database_password, host=self.host_name, database=self.database_name)
-                if verbose: print("".join(['Connected on local DB "', self.database_name, '"']))
+                "".join(['Connected on local DB "', self.database_name, '"'])
             else:
                 # test the distant database connection
                 con = mysql.connector.connect(user=self.database_username, password=self.database_password, host=self.server_ip, database=self.database_name)
-                if verbose: print("".join(['Connected on distant DB "', self.database_name, '" on "', self.server_ip, '"']))
+                "".join(['Connected on distant DB "', self.database_name, '" on "', self.server_ip, '"'])
             return con, sys.exc_info()
         
         except:
             # return error
             return False, sys.exc_info()
+        
+    def get_last_mesured_temperature(self):
+      
+        con, e = self.get_db_connexion()
+        if not con:
+            print("get_last_mesured_temperature -> DB UNEXPECTED ERROR " + str(e) + " Le programme va s'arrêter")
+            msg = "DB UNEXPECTED ERROR", " Erreur innatendue " + str(e) + " Le programme va s'arrêter"
+            tk.messagebox.showerror(msg)
+            logging.warning("DB UNEXPECTED ERROR", msg)
+            exit()
+        
+        cur = con.cursor()
+        sql_txt =  "SELECT time_stamp, t12, t13, t14 FROM tlog WHERE id=(SELECT MAX(id) FROM tlog);"
+        cur.execute(sql_txt)
+        row = cur.fetchall()
+        # return only the first record
+        return row[0]
+
+    def get_temp_for_graph(self, nbre_hours_on_graph):
+        
+        # return the measured temperature for the last "nbre_hours_on_graph"
+        
+        time_last_mesure = self.get_last_mesured_temperature()[0]  # pour test on prend la dernière valeur de la base de données
+        time_last_mesure_str = "".join([str(time_last_mesure.year),"-",str(time_last_mesure.month),"-", str(time_last_mesure.day)," ",
+                             str(time_last_mesure.hour),":",str(time_last_mesure.minute),":",str(time_last_mesure.second)]) 
+
+        time_end_mesure = datetime.strptime(time_last_mesure_str, '%Y-%m-%d %H:%M:%S')
+        time_begin_mesure = time_end_mesure - timedelta(hours=nbre_hours_on_graph)
+        
+        # connect the db and create the cursor to access the database
+      
+        con, e = self.get_db_connexion()
+        if not con:
+            print("get_temp_for_graph -> DB UNEXPECTED ERROR\n" + str(e[0]), "/", str(e[1]), "/", str(e[2]) + " Le programme va s'arrêter")
+            msg = "".join(["ERROR " + str(e[0]), "/ ", str(e[1]), "/ ", str(e[2]) + "Le programme va s'arrêter"])
+            tk.messagebox.showerror("DB UNEXPECTED ERROR", msg)
+            logging.warning("DB UNEXPECTED ERROR", msg)
+            exit()
+            
+        cur = con.cursor()
+        sql_txt = "".join(["SELECT t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, s10, s11, s20, time_stamp, id ",
+                           "FROM tlog WHERE time_stamp BETWEEN '", str(time_begin_mesure), "' AND '", str(time_end_mesure), "';"])
+        cur.execute(sql_txt)
+        row = cur.fetchall()
+        
+        return row
 
 
 if __name__ == '__main__':
 
     # ERROR : direct acces to this class is not ok, reason = ????? (21.04.2020 jm)
-    mysql = Mysql('192.168.1.139')
-    ip  = mysql.local_ip
-    mysql.get_db_connection(True)
+    mysql_init = Mysql('192.168.1.139')
+    ip  = mysql_init.local_ip
+    connexion = mysql_init.get_db_connexion()
+    
+    # verify connexion
+    if connexion:
+        print("connected on db server on",ip)
+        
+    # verify mysql_init.get_last_mesured_temperature()
+    data = mysql_init.get_last_mesured_temperature()
+    print(" ".join(["function: get_last_mesured_temperature -->", str(datetime.strptime(str(data[0]), '%Y-%m-%d %H:%M:%S')), "salon=",
+                    str(data[1]), "bureau=", str(data[2]), "exterieur=", str(data[3])]))
+    
+    # verify mysql_init.get_temp_for_graph()
+    data = mysql_init.get_temp_for_graph(12)
+    print(" ".join(["function: get_temp_for_graph -->", str(len(data)), "records received for 12 hours"]))
+    
+    
+    
