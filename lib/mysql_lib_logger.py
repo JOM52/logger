@@ -11,7 +11,8 @@ import os
 #     import PyMySQL
 # else:
 # import mysql.connector
-import pymysql
+# import pymysql
+import mysql.connector
 
 import tkinter as tk
 from datetime import datetime, timedelta
@@ -101,12 +102,12 @@ class Mysql:
         try:
             if self.local_ip == self.server_ip: # if we are on the RPI with mysql server (RPI making temp acquis)
                 # test the local database connection
-                con = pymysql.connect(user=self.database_username, password=self.database_password, host=self.host_name, database=db)
+                con = mysql.connector.connect(user=self.database_username, password=self.database_password, host=self.host_name, database=db)
 #                 con = pymysql.connect(user=self.database_username, password=self.database_password, host=self.host_name, database=self.database_name)
 #                 print("".join(['Connected on local DB "', db, '"']))
             else:
                 # test the distant database connection
-                con = pymysql.connect(user=self.database_username, password=self.database_password, host=self.server_ip, database=db)
+                con = mysql.connector.connect(user=self.database_username, password=self.database_password, host=self.server_ip, database=db)
 #                 con = pymysql.connect(user=self.database_username, password=self.database_password, host=self.server_ip, database=self.database_name)
 #                 print("".join(['Connected on distant DB "', db, '" on "', self.server_ip, '"']))
             return con, sys.exc_info()
