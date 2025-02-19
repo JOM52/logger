@@ -10,9 +10,9 @@ written by Joseph Metrailler in 2016-2018-2020 (parts of code from Adafruit).
     13.08.2020 -> version 1.0.0 -> en service sans problème depuis 3 mois
 """
 
-from lib.ds18b20_lib_logger import DS18B20 # import class DS18B20
-from lib.ds2413_lib_logger import DS2413 # import class DS2413
-from lib.mysql_lib_logger import Mysql # import Mysql class
+from lib_ds18b20_logger import DS18B20 # import class DS18B20
+from lib_ds2413_logger import DS2413 # import class DS2413
+from lib_mysql_logger import Mysql # import Mysql class
 
 import time
 import datetime
@@ -36,7 +36,7 @@ class DataLogger:
         self.v_time_begin = time.time() # to calculate elapsed tiem
 
         # initialise database access
-        mysql_ip = "192.168.1.109"
+        mysql_ip = "192.168.1.108"
         db_name = "logger"
         self.mysql_con = Mysql(mysql_ip)
 
@@ -49,10 +49,10 @@ class DataLogger:
         self.nbre_ds2413 = self.ds2413_array.device_count()
         
         # check count_wireless_sensors
-        self.nbre_wireless_ds18b20 = self.count_wireless_ds18b20()
+#         self.nbre_wireless_ds18b20 = self.count_wireless_ds18b20()
         
         # no connected sensor -> exit
-        if self.nbre_ds18b20 == 0 and self.nbre_ds2413 == 0 and self.nbre_wireless_ds18b20 == 0:
+        if self.nbre_ds18b20 == 0 and self.nbre_ds2413 == 0: # and self.nbre_wireless_ds18b20 == 0:
             msg = "Aucun capteur détecté. Ajoutez des capteurs de température DS18B20 ou d'état DS2413 ou wireless puis relancez le programme."
             title = "Sensors_ERROR"
             print(msg)
@@ -69,66 +69,66 @@ class DataLogger:
             title = "DS18B20 wired ERROR"
             print(msg)
 
-        elif self.nbre_wireless_ds18b20 == 0:
-            msg = "Pas de capteurs de température wireless détectés. L'acquisition se poursuit sans mesure de température wireless"
-            title = "DS18b20 wireless ERROR"
-            print(msg)
+#         elif self.nbre_wireless_ds18b20 == 0:
+#             msg = "Pas de capteurs de température wireless détectés. L'acquisition se poursuit sans mesure de température wireless"
+#             title = "DS18b20 wireless ERROR"
+#             print(msg)
             
         msg = "".join([str(self.nbre_ds18b20), " capteurs de température DS18B20 cablés détecté(s)\n",
-                       str(self.nbre_wireless_ds18b20), " capteurs de température DS18B20 sans fil détecté(s)\n",
+                       # str(self.nbre_wireless_ds18b20), " capteurs de température DS18B20 sans fil détecté(s)\n",
                        str(self.nbre_ds2413), " capteurs d'état détecté(s)"])
         print(msg)
 
-    def count_wireless_ds18b20(self):
-        
-        n_ds18x20_sensors = 0
-        sql_txt = "SELECT sensorid, sensorval FROM reduit"
-        reduit_connection, err = self.mysql_con.get_db_connection("mqtt")
-        print('reduit_connection:', reduit_connection, 'err:', err)
-        reduit_cursor = reduit_connection.cursor()
-        reduit_cursor.execute(sql_txt)
-        reduit_row = reduit_cursor.fetchall()
-        n_ds18x20_sensors = len(reduit_row)
-        reduit_cursor.close()
-        reduit_connection.close()
-        return n_ds18x20_sensors
-
-    def get_wireless_temp(self):
-        
-        try:
-            temp_reduit =[]
-            
-            sql_txt = "SELECT sensorid, sensorval FROM reduit"
-            reduit_connection, err = self.mysql_con.get_db_connection("mqtt")
-            reduit_cursor = reduit_connection.cursor()
-            reduit_cursor.execute(sql_txt)
-            reduit_row = reduit_cursor.fetchall()
-            reduit_cursor.close()
-            reduit_connection.close()
-            
-            db_connection, err = self.mysql_con.get_db_connection("logger")
-            for row in reduit_row:
-                sensor_id = row[0].strip()
-                sensor_temp = row[1]
-                sql_txt = "SELECT id, sensor_txt FROM tsensor WHERE sensor_id = '" + sensor_id + "'"
-                db_cursor = db_connection.cursor()
-                db_cursor.execute(sql_txt)
-                row= db_cursor.fetchall()
-                if len(row) > 0:
-                    table_id = row[0][0]
-                    sensor_txt = row[0][1]
-                    temp_reduit.append([table_id, sensor_id, sensor_txt, sensor_temp])
-            db_cursor.close()
-            db_connection.close()
-            return temp_reduit
-        except:
-            return -333
+#     def count_wireless_ds18b20(self):
+#         
+#         n_ds18x20_sensors = 0
+#         sql_txt = "SELECT sensorid, sensorval FROM reduit"
+#         reduit_connection, err = self.mysql_con.get_db_connection("mqtt")
+#         print('reduit_connection:', reduit_connection, 'err:', err)
+#         reduit_cursor = reduit_connection.cursor()
+#         reduit_cursor.execute(sql_txt)
+#         reduit_row = reduit_cursor.fetchall()
+#         n_ds18x20_sensors = len(reduit_row)
+#         reduit_cursor.close()
+#         reduit_connection.close()
+#         return n_ds18x20_sensors
+# 
+#     def get_wireless_temp(self):
+#         
+#         try:
+#             temp_reduit =[]
+#             
+#             sql_txt = "SELECT sensorid, sensorval FROM reduit"
+#             reduit_connection, err = self.mysql_con.get_db_connection("mqtt")
+#             reduit_cursor = reduit_connection.cursor()
+#             reduit_cursor.execute(sql_txt)
+#             reduit_row = reduit_cursor.fetchall()
+#             reduit_cursor.close()
+#             reduit_connection.close()
+#             
+#             db_connection, err = self.mysql_con.get_db_connection("logger")
+#             for row in reduit_row:
+#                 sensor_id = row[0].strip()
+#                 sensor_temp = row[1]
+#                 sql_txt = "SELECT id, sensor_txt FROM tsensor WHERE sensor_id = '" + sensor_id + "'"
+#                 db_cursor = db_connection.cursor()
+#                 db_cursor.execute(sql_txt)
+#                 row= db_cursor.fetchall()
+#                 if len(row) > 0:
+#                     table_id = row[0][0]
+#                     sensor_txt = row[0][1]
+#                     temp_reduit.append([table_id, sensor_id, sensor_txt, sensor_temp])
+#             db_cursor.close()
+#             db_connection.close()
+#             return temp_reduit
+#         except:
+#             return -333
 
     def run_acquis(self):
         
         # temperatures reduit
         temp_reduit =[]
-        temp_reduit = self.get_wireless_temp()
+        temp_reduit = -333 #self.get_wireless_temp()
         print("---------------------------------------------------------------")
         if temp_reduit != -333:
             for z in temp_reduit:

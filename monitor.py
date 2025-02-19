@@ -13,13 +13,13 @@ from tkinter import *
 from datetime import datetime, timedelta
 from math import *
 
-from lib.mysql_lib_logger import Mysql
+from lib_mysql_logger import Mysql
 # import pdb
 
 class Main:
     
     """ Cette classe permet d'afficher les graphiques des températures enregistrée dans
-        la base de donnée 'logger' (par defaut sur mysql server '192.168.1.109')
+        la base de donnée 'logger' (par defaut sur mysql server '192.168.1.108')
         ------------------------------------------------------------
         index : dans data_from_db et data_for_graph
         field name : nom du champ dans la base de donnée
@@ -96,7 +96,7 @@ class Main:
         self.tk_root.configure(background='grey95')
         
         
-        self.ip_db_server = "192.168.1.109"
+        self.ip_db_server = "192.168.1.108"
         self.mysql_logger = Mysql(self.ip_db_server)
 
         # initialisations
@@ -532,7 +532,8 @@ class Main:
         
         # menu database
         databasemenu = Menu(menubar, tearoff=0)
-#         databasemenu.add_radiobutton(label="192.168.1.108", font = self.FONT_LABEL, variable = self.selected_ip, command=lambda: self.select_database_ip("192.168.1.108"))
+        databasemenu.add_radiobutton(label="localhost", font = self.FONT_LABEL, variable = self.selected_ip, command=lambda: self.select_database_ip("localhost"))
+        databasemenu.add_radiobutton(label="192.168.1.108", font = self.FONT_LABEL, variable = self.selected_ip, command=lambda: self.select_database_ip("192.168.1.108"))
         databasemenu.add_radiobutton(label="192.168.1.109", font = self.FONT_LABEL, variable = self.selected_ip,  command=lambda: self.select_database_ip("192.168.1.109"))
         databasemenu.add_radiobutton(label="192.168.1.110", font = self.FONT_LABEL, variable = self.selected_ip, command=lambda: self.select_database_ip("192.168.1.110"))
         databasemenu.add_radiobutton(label="192.168.1.143", font = self.FONT_LABEL, variable = self.selected_ip, command=lambda: self.select_database_ip("192.168.1.143"))
