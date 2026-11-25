@@ -1,3 +1,8 @@
 venv/
 *.pyc
 
+
+*_dump.sql
+*_dump.sql.gz
+__pycache__/
+.ipynb_checkpoints/

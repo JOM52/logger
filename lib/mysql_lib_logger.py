@@ -24,7 +24,7 @@ class Mysql:
     """ cette classe sert à accéder à la base de données des températures
         les valeurs sont retournées selon la liste ci-après.
         
-        La base de données est sur le RPI 192.168.1.109 et est accessible en local ou par le réseau.
+        La base de données est sur le RPI 192.168.1.165 et est accessible en local ou par le réseau.
         L'accès à la base de données est vérifiée lors de l'_init et les défauts d'accès sont enregistrés.
         
         ------------------------------------------------------------
@@ -217,7 +217,7 @@ class Mysql:
 
 if __name__ == '__main__':
 
-    db_server_ip = '192.168.1.139'
+    db_server_ip = '192.168.1.165'
     mysql_init = Mysql(db_server_ip)
     ip  = mysql_init.local_ip
     connection = mysql_init.get_db_connection(mysql_init.database_name)

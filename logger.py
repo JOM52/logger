@@ -36,7 +36,7 @@ class DataLogger:
         self.v_time_begin = time.time() # to calculate elapsed tiem
 
         # initialise database access
-        mysql_ip = "192.168.1.109"
+        mysql_ip = "192.168.1.165"
         db_name = "logger"
         self.mysql_con = Mysql(mysql_ip)
 
@@ -80,6 +80,7 @@ class DataLogger:
         print(msg)
 
     def count_wireless_ds18b20(self):
+        return
         
         n_ds18x20_sensors = 0
         sql_txt = "SELECT sensorid, sensorval FROM reduit"

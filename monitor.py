@@ -96,7 +96,7 @@ class Main:
         self.tk_root.configure(background='grey95')
         
         
-        self.ip_db_server = "192.168.1.109"
+        self.ip_db_server = "192.168.1.165"
         self.mysql_logger = Mysql(self.ip_db_server)
 
         # initialisations
